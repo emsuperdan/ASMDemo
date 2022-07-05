@@ -1,2 +1,5 @@
 rootProject.name = "My Application"
 include ':app'
+include ':countrydiff-annotation'
+include ':countrydiff-compiler'
+include ':countrydiff-api'
