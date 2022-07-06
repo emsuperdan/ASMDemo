@@ -19,20 +19,24 @@ public class CustomTransform extends Transform {
     public static ArrayList<ScanSetting> registerList;
     public static File fileContainsInitClass;
 
+    // 构造函数中将Project保存下来备用
     public CustomTransform(Project project) {
         this.project = project;
     }
 
+    // 设置我们自定义的Transform对应的Task名称
     @Override
     public String getName() {
         return ScanSetting.PLUGIN_NAME;
     }
 
+    // 指定输入的类型，通过这里的设定，可以指定我们要处理的文件类型
     @Override
     public Set<QualifiedContent.ContentType> getInputTypes() {
         return TransformManager.CONTENT_CLASS;
     }
 
+    // 指定Transform的作用范围
     @Override
     public Set<? super QualifiedContent.Scope> getScopes() {
         return TransformManager.SCOPE_FULL_PROJECT;
@@ -56,12 +60,14 @@ public class CustomTransform extends Transform {
         long startTime = System.currentTimeMillis();
         boolean leftSlash = "/".equals(File.separator);
 
+        // Transform的inputs有两种类型，一种是目录，一种是jar包，要分开遍历
         for (TransformInput input : inputs) {
 
-            // scan all files
+            //对类型为jar文件的input进行遍历
+            //jar文件一般是第三方依赖库jar文件
             for (JarInput jarInput : input.getJarInputs()) {
                 String destName = jarInput.getName();
-                // rename jar files
+                // 重命名输出文件（同目录copyFile会冲突）
                 String hexName = DigestUtils.md5Hex(jarInput.getFile().getAbsolutePath());
                 if (destName.endsWith(".jar")) {
                     destName = destName.substring(0, destName.length() - 4);
@@ -81,6 +87,8 @@ public class CustomTransform extends Transform {
                 FileUtils.copyFile(src, dest);
             }
 
+            // 遍历文件夹
+            //文件夹里面包含的是我们手写的类以及R.class、BuildConfig.class以及R$XXX.class等
             for (DirectoryInput directoryInput : input.getDirectoryInputs()) {
                 File dest = outputProvider.getContentLocation(directoryInput.getName(),
                         directoryInput.getContentTypes(),
