@@ -24,6 +24,7 @@ public class CountryDiff {
     }
 
     public static void init(int countryCode) {
+        addTransformMap();
         mCountryCode = countryCode;
     }
 
@@ -36,6 +37,13 @@ public class CountryDiff {
             }
         }
         return singleton;
+    }
+
+    /**
+     * 通过插桩的方式，往这个方法里加入registerMap(ClassName)这段代码；
+     */
+    private static void addTransformMap() {
+        //插桩registerMap(ClassName);
     }
 
     private static void registerMap(String className) {

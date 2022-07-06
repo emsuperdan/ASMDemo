@@ -65,7 +65,8 @@ public class CustomAnnotationProcessor extends AbstractProcessor {
 
             System.out.println("The user has configuration the module name, it was [" + moduleName + "]");
         } else {
-            throw new RuntimeException("Country Diff::Compiler >>> No module name, for more information, look at gradle log.");
+            throw new RuntimeException("Country Diff::Compiler >>> No module name, for more information, look at " +
+                    "gradle log.");
         }
 
     }
@@ -103,6 +104,10 @@ public class CustomAnnotationProcessor extends AbstractProcessor {
                 }
                 //diffmap存以接口名为k，类名为v的东西；(因为使用方法就是通过继承接口的方式)
                 diffMap.get(interfacesElement).add(subClass);
+                System.out.println(">>> country diff: put inteface " + interfacesElement.toString() + " find Class " +
+                        subClass.toString() + " <<<");
+            } else {
+                System.out.println(">>> country diff: find class Error <<<");
             }
 
 
@@ -112,7 +117,8 @@ public class CustomAnnotationProcessor extends AbstractProcessor {
             MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder("load")
                     //我理解这第二个参数可任意命名，只需满足和下面javapoet调用参数一致即可；
                     .addParameter(ParameterSpec.builder(parameterizedMap, "map").build())
-                    .addModifiers(Modifier.PUBLIC);
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class);
 
             //遍历diffmap里的类,并拼接一段代码，通过插桩来启动往文件中写入这
             //段代码，实现完成api类中的HashMap<Class, MetaSet> mCountryDiffs赋值；
@@ -122,12 +128,14 @@ public class CustomAnnotationProcessor extends AbstractProcessor {
                 //① MetaSet metaSet = new MetaSet();
                 methodBuilder.addStatement("$T " + cMeta + "= new $T()", ParameterizedTypeName.get(MetaSet.class),
                         ParameterizedTypeName.get(MetaSet.class));
-                for (ClassName className: meta.getValue()){
-                    //② metaSet.add(MetaSet.class);
-                    methodBuilder.addStatement(cMeta + ".add($T.class)",className);
+                for (ClassName className : meta.getValue()) {
+                    System.out.println(">>> country diff: add class: " + className + "index:" + index + "<<<");
+                    //② metaSet.add(XX.class);
+                    methodBuilder.addStatement(cMeta + ".add($T.class)", className);
                 }
-                //③ map.put(MetaSet.class, metaSet);
+                //③ map.put(Interface.class, metaSet);
                 methodBuilder.addStatement("map.put($T.class, " + cMeta + ")", meta.getKey());
+                index++;
             }
 
             try {
